@@ -6,6 +6,14 @@
       {{ loading ? "Memuat Data..." : "Tampilkan Data Cryptocurrency" }}
     </button>
 
+    <div v-if="tampil" class="sort-selector">
+      <label for="sortBy">Urutkan berdasarkan:</label>
+      <select id="sortBy" v-model="sortBy" @change="sortData">
+        <option value="market_cap">Market Cap</option>
+        <option value="price">Harga (Price)</option>
+      </select>
+    </div>
+
     <div v-if="error" class="error-message">
       {{ error }}
     </div>
@@ -22,14 +30,15 @@
             <th>Logo</th>
             <th>Name</th>
             <th>Symbol</th>
+            <th>Market Cap (USD)</th>
             <th>Price (USD)</th>
             <th>Price (IDR)</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="crypto in dataCryptoList" :key="crypto.id">
+          <tr v-for="(crypto, index) in sortedCryptoList" :key="crypto.id">
             <td class="rank-cell" :class="getRankClass(crypto)">
-              <span class="rank-value">{{ crypto.rank }}</span>
+              <span class="rank-value">{{ index + 1 }}</span>
               <span v-if="crypto.rankChange === 'up'" class="rank-indicator up">
                 ↑
               </span>
@@ -50,6 +59,9 @@
             </td>
             <td class="name-cell">{{ crypto.name }}</td>
             <td class="symbol-cell">{{ crypto.symbol }}</td>
+            <td class="market-cap-cell">
+              ${{ formatMarketCap(crypto.market_cap_usd) }}
+            </td>
             <td class="price-usd" :class="getPriceClass(crypto)">
               ${{ formatNumber(crypto.price_usd) }}
               <span v-if="crypto.priceChange === 'up'" class="price-indicator">
@@ -106,7 +118,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted } from "vue";
+import { defineComponent, ref, computed, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 
 interface Cryptocurrency {
@@ -115,6 +127,7 @@ interface Cryptocurrency {
   name: string;
   symbol: string;
   price_usd: string;
+  market_cap_usd: string;
   priceChange?: "up" | "down" | "neutral";
   rankChange?: "up" | "down" | "neutral";
 }
@@ -128,10 +141,36 @@ export default defineComponent({
     const dataCryptoList = ref<Cryptocurrency[]>([]);
     const kursUSDtoIDR = ref(15700);
     const currentYear = new Date().getFullYear();
+    const sortBy = ref<"market_cap" | "price">("market_cap");
     let refreshInterval: number | null = null;
     const previousData = ref<{ [id: string]: { price: number; rank: number } }>(
       {}
     );
+
+    // Computed property to sort the crypto list based on selected criteria
+    const sortedCryptoList = computed(() => {
+      const data = [...dataCryptoList.value];
+      if (sortBy.value === "market_cap") {
+        return data.sort((a, b) => {
+          const marketCapA = parseFloat(a.market_cap_usd) || 0;
+          const marketCapB = parseFloat(b.market_cap_usd) || 0;
+          return marketCapB - marketCapA; // Descending order (highest first)
+        });
+      } else if (sortBy.value === "price") {
+        return data.sort((a, b) => {
+          const priceA = parseFloat(a.price_usd) || 0;
+          const priceB = parseFloat(b.price_usd) || 0;
+          return priceB - priceA; // Descending order (highest first)
+        });
+      }
+      return data;
+    });
+
+    // Function to handle sort change
+    const sortData = () => {
+      // The computed property automatically handles sorting
+      // This function is called on change event for any additional logic if needed
+    };
 
     const tampilkanDataCrypto = async () => {
       loading.value = true;
@@ -235,6 +274,24 @@ export default defineComponent({
       });
     };
 
+    // Format market cap with abbreviated format (B for billions, M for millions)
+    const formatMarketCap = (value: string): string => {
+      const num = parseFloat(value);
+      if (num >= 1e12) {
+        return (num / 1e12).toFixed(2) + "T";
+      } else if (num >= 1e9) {
+        return (num / 1e9).toFixed(2) + "B";
+      } else if (num >= 1e6) {
+        return (num / 1e6).toFixed(2) + "M";
+      } else if (num >= 1e3) {
+        return (num / 1e3).toFixed(2) + "K";
+      }
+      return num.toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+    };
+
     // Get CSS class for price animation
     const getPriceClass = (crypto: Cryptocurrency): string => {
       if (crypto.priceChange === "up") return "price-up";
@@ -270,12 +327,16 @@ export default defineComponent({
       loading,
       error,
       dataCryptoList,
+      sortedCryptoList,
+      sortBy,
       kursUSDtoIDR,
       currentYear,
       tampilkanDataCrypto,
+      sortData,
       getCryptoLogo,
       formatNumber,
       formatIDR,
+      formatMarketCap,
       getPriceClass,
       getRankClass,
     };
@@ -324,6 +385,45 @@ h1 {
   background-color: #cccccc;
   cursor: not-allowed;
   transform: none;
+}
+
+.sort-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.sort-selector label {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.sort-selector select {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: 2px solid #4caf50;
+  border-radius: 6px;
+  background-color: white;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.sort-selector select:hover {
+  border-color: #45a049;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sort-selector select:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
 }
 
 .error-message {
@@ -383,7 +483,8 @@ h1 {
 }
 
 .crypto-table th:nth-child(5),
-.crypto-table th:nth-child(6) {
+.crypto-table th:nth-child(6),
+.crypto-table th:nth-child(7) {
   text-align: right;
 }
 
@@ -475,6 +576,13 @@ h1 {
   text-transform: uppercase;
   min-width: 100px;
   text-align: left;
+}
+
+.market-cap-cell {
+  font-weight: bold;
+  color: #9c27b0;
+  text-align: right;
+  min-width: 140px;
 }
 
 .price-usd {
