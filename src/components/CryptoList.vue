@@ -1,6 +1,6 @@
 <template>
   <div class="crypto-container">
-    <h1>Top 10 Cryptocurrency</h1>
+    <h1>Top 100 Cryptocurrency</h1>
 
     <button @click="tampilkanDataCrypto" class="btn-load" :disabled="loading">
       {{ loading ? "Memuat Data..." : "Tampilkan Data Cryptocurrency" }}
