@@ -8,7 +8,7 @@
 
     <div v-if="tampil" class="sort-selector">
       <label for="sortBy">Urutkan berdasarkan:</label>
-      <select id="sortBy" v-model="sortBy" @change="sortData">
+      <select id="sortBy" v-model="sortBy">
         <option value="market_cap">Market Cap</option>
         <option value="price">Harga (Price)</option>
       </select>
@@ -166,12 +166,6 @@ export default defineComponent({
       return data;
     });
 
-    // Function to handle sort change
-    const sortData = () => {
-      // The computed property automatically handles sorting
-      // This function is called on change event for any additional logic if needed
-    };
-
     const tampilkanDataCrypto = async () => {
       loading.value = true;
       error.value = "";
@@ -277,6 +271,7 @@ export default defineComponent({
     // Format market cap with abbreviated format (B for billions, M for millions)
     const formatMarketCap = (value: string): string => {
       const num = parseFloat(value);
+      if (isNaN(num)) return "0";
       if (num >= 1e12) {
         return (num / 1e12).toFixed(2) + "T";
       } else if (num >= 1e9) {
@@ -332,7 +327,6 @@ export default defineComponent({
       kursUSDtoIDR,
       currentYear,
       tampilkanDataCrypto,
-      sortData,
       getCryptoLogo,
       formatNumber,
       formatIDR,
