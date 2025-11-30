@@ -7,7 +7,7 @@
     </button>
 
     <div v-if="tampil" class="sort-selector">
-      <label for="sortBy">Urutkan berdasarkan:</label>
+      <label for="sortBy">Urut berdasarkan:</label>
       <select id="sortBy" v-model="sortBy">
         <option value="market_cap">Market Cap</option>
         <option value="price">Harga (Price)</option>
