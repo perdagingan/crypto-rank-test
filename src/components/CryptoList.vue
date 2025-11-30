@@ -1,6 +1,6 @@
 <template>
   <div class="crypto-container">
-    <h1>Daftar Cryptocurrency</h1>
+    <h1>Top 10 Cryptocurrency</h1>
 
     <button @click="tampilkanDataCrypto" class="btn-load" :disabled="loading">
       {{ loading ? "Memuat Data..." : "Tampilkan Data Cryptocurrency" }}
@@ -26,13 +26,13 @@
       <table class="crypto-table">
         <thead>
           <tr>
-            <th>Rank</th>
+            <th>Peringkat</th>
             <th>Logo</th>
-            <th>Name</th>
-            <th>Symbol</th>
+            <th>Nama</th>
+            <th>Simbol</th>
             <th>Market Cap (USD)</th>
-            <th>Price (USD)</th>
-            <th>Price (IDR)</th>
+            <th>Harga (USD)</th>
+            <th>Harga (IDR)</th>
           </tr>
         </thead>
         <tbody>
@@ -108,7 +108,7 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; {{ currentYear }} Crypto Tracker. Made with ❤️ for MSIM4401</p>
+        <p>&copy; {{ currentYear }} Crypto Tracker. Made with ❤️ by Anam and Copilot for Tugas 3 - MSIM4401</p>
         <p class="disclaimer">
           ⚠️ Disclaimer: Data hanya untuk referensi. Lakukan riset sendiri sebelum berinvestasi.
         </p>
